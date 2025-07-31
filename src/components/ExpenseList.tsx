@@ -92,7 +92,7 @@ const [commitmentError, setCommitmentError] = useState<string | null>(null)
 
   return (
     <>
-      <Stack spacing="xl" p="md">
+      <Stack gap="xl" p="md">
         <Title order={2}>Lista de Despesas</Title>
 
         {expenses.length === 0 && (
@@ -143,13 +143,13 @@ const [commitmentError, setCommitmentError] = useState<string | null>(null)
         )}
 
         {errorDetails && (
-          <Text color="red" align="center">
+          <Text c="red" ta="center">
             {errorDetails}
           </Text>
         )}
 
         {selectedExpense && !loadingDetails && !errorDetails && (
-          <Stack spacing="sm">
+          <Stack gap="sm">
             <Text>
               <b>ID:</b> {selectedExpense.id}
             </Text>
@@ -175,7 +175,7 @@ const [commitmentError, setCommitmentError] = useState<string | null>(null)
 
             {selectedExpense.commitments && selectedExpense.commitments.length > 0 && (
               <>
-                <Text weight={700} mt="md">
+                <Text w={700} mt="md">
                   Empenhos:
                 </Text>
                 {selectedExpense.commitments.map((commitment) => (
@@ -187,7 +187,7 @@ const [commitmentError, setCommitmentError] = useState<string | null>(null)
                       borderRadius: 8,
                       backgroundColor: '#fafafa',
                     }}
-                    spacing={5}
+                    gap={5}
                   >
                     <Text>
                       <b>ID:</b> {commitment.id}
@@ -209,7 +209,7 @@ const [commitmentError, setCommitmentError] = useState<string | null>(null)
         )}
 
         {!selectedExpense && !loadingDetails && !errorDetails && (
-          <Text align="center" color="dimmed">
+          <Text ta="center" c="dimmed">
             Nenhum detalhe disponível.
           </Text>
         )}
@@ -222,11 +222,11 @@ const [commitmentError, setCommitmentError] = useState<string | null>(null)
         size="md"
         centered
       >
-        <Stack spacing="md">
+        <Stack gap="md">
           <NumberInput
             label="Valor"
             min={0}
-            precision={2}
+            p={2}
             value={newCommitment.amount}
             onChange={(value) =>
               setNewCommitment((prev) => ({ ...prev, amount: Number(value) ?? 0 }))
@@ -242,7 +242,7 @@ const [commitmentError, setCommitmentError] = useState<string | null>(null)
         />
 
         {commitmentError && (
-          <Text color="red" align="center" mb="sm">
+          <Text color="red" ta="center" mb="sm">
             {commitmentError}
           </Text>
         )}
