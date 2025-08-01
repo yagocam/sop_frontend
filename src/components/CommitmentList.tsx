@@ -113,7 +113,15 @@ const CommitmentList: React.FC = () => {
   const handleUpdateCommitment = async () => {
     if (!editingCommitment) return
 
-    await dispatch(updateCommitment(editingCommitment))
+    await dispatch(
+      updateCommitment({
+        id: editingCommitment.id,
+        data: {
+          amount: editingCommitment.amount,
+          observation: editingCommitment.observation,
+        },
+      })
+    )
     handleCloseEditModal()
     dispatch(fetchCommitments())
   }
@@ -152,9 +160,9 @@ const CommitmentList: React.FC = () => {
               <tbody>
                 {commitments.map((commitment) => (
                   <tr key={commitment.id}>
-                   <td>{commitment.number}</td>
+                    <td>{commitment.number}</td>
                     <td>R$ {commitment.amount.toFixed(2)}</td>
-                    <td>{commitment.observation ?? "Sem observação"}</td>
+                    <td>{commitment.observation ?? 'Sem observação'}</td>
                     <td>
                       <Group gap="xs">
                         <Button
