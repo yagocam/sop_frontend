@@ -156,7 +156,7 @@ export default function PaymentList() {
                   label="Valor"
                   min={0}
                   value={editAmount}
-                  onChange={(val) => setEditAmount(val || 0)}
+                  onChange={(val) => setEditAmount(Number(val) || 0)}
                   p={2}
                 />
                 <TextInput
