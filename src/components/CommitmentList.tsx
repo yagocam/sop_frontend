@@ -228,12 +228,12 @@ const CommitmentList: React.FC = () => {
               Adicionar Pagamento
             </Button>
 
-            {commitmentDetails.payments?.length > 0 && (
+            {(commitmentDetails.payments || []).length  > 0 && (
               <>
                 <Text fw={700} mt="md">
                   Pagamentos:
                 </Text>
-                {commitmentDetails.payments.map((payment) => (
+                {commitmentDetails.payments || [].map((payment) => (
                   <Stack
                     key={payment.id}
                     p="sm"
