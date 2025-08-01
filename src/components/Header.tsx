@@ -3,7 +3,7 @@
 import React from 'react';
 import { Group, Button, Text } from '@mantine/core';
 import { useRouter } from 'next/navigation';
-import { useAppDispatch, useAppSelector } from '@/store/hooks';
+import { useAppDispatch } from '@/store/hooks';
 import { logout } from '@/store/slices/authSlice';
 
 export default function Header() {
