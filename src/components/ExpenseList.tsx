@@ -84,6 +84,7 @@ const expenseTypeData = [
 }
     try {
       await api.post('/api/expenses', {
+        responsable: newResponsable,
         description: newDescription,
         amount: newAmount,
         type: newType,
@@ -92,6 +93,7 @@ const expenseTypeData = [
       setNewDescription('');
       setNewAmount(undefined);
       setNewType(null);
+      setNewResponsable('');
       fetchExpenses();
     } catch (error) {
       console.error('Erro ao criar despesa', error);
