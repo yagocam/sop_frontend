@@ -4,8 +4,9 @@ import { Expense } from '../../types'
 
 export const fetchExpenses = createAsyncThunk('expense/fetch', async () => {
   const response = await api.get<Expense[]>('/api/expenses')
-  return response
+  return response.data // Corrigido para retornar só os dados
 })
+
 export const updateExpense = createAsyncThunk(
   'expenses/update',
   async ({ id, data }: { id: number; data: Partial<Expense> }, { rejectWithValue }) => {
@@ -37,8 +38,7 @@ const expenseSlice = createSlice({
     loading: false,
     error: null as string | null,
   },
-  reducers: {
-  },
+  reducers: {},
   extraReducers: builder => {
     builder
       .addCase(fetchExpenses.pending, state => {
@@ -47,7 +47,7 @@ const expenseSlice = createSlice({
       })
       .addCase(fetchExpenses.fulfilled, (state, action) => {
         state.loading = false
-        state.expenses = action.payload
+        state.expenses = action.payload // Aqui action.payload é Expense[]
       })
       .addCase(fetchExpenses.rejected, (state, action) => {
         state.loading = false
@@ -62,7 +62,6 @@ const expenseSlice = createSlice({
       .addCase(updateExpense.rejected, (state, action) => {
         state.error = action.payload as string
       })
-
       .addCase(deleteExpense.fulfilled, (state, action) => {
         state.expenses = state.expenses.filter(p => p.id !== action.payload)
       })
