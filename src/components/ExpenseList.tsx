@@ -12,7 +12,7 @@ import {
   Textarea,
   NumberInput,
   Group,
-  NativeSelect, // IMPORTANTE: importe NativeSelect
+  NativeSelect, 
 } from '@mantine/core';
 import api from '@/api/axios';
 import { Expense } from '@/types';
@@ -28,6 +28,7 @@ const ExpenseList: React.FC = () => {
   const [createModalOpened, setCreateModalOpened] = useState(false);
 
   const [newDescription, setNewDescription] = useState('');
+  const [newResponsable, setNewResponsable] = useState('');
   const [newAmount, setNewAmount] = useState<number | undefined>(undefined);
   const [newType, setNewType] = useState<string | null>(null);
 
@@ -71,6 +72,11 @@ const ExpenseList: React.FC = () => {
     fetchExpenses();
   };
 
+const expenseTypeData = [
+  { value: 'OBRA_DE_EDIFICACAO', label: 'Obra de Edificação' },
+  { value: 'OBRA_DE_RODOVIAS', label: 'Obra de Rodovias' },
+  { value: 'OUTROS', label: 'Outros' },
+];
   const handleCreateExpense = async () => {
     if (!newDescription.trim() || !newAmount || !newType) {
       alert('Por favor, preencha descrição, valor e tipo');
@@ -180,6 +186,9 @@ const ExpenseList: React.FC = () => {
             <Text>
               <b>Descrição:</b> {selectedExpense.description}
             </Text>
+             <Text>
+              <b>Responsavel:</b> {selectedExpense.responsable}
+            </Text>
             <Text>
               <b>Valor:</b> R$ {selectedExpense.amount.toFixed(2)}
             </Text>
@@ -213,6 +222,32 @@ const ExpenseList: React.FC = () => {
                 )
               }
             />
+            <Textarea
+              label="Responsavel"
+              value={selectedExpense.responsable}
+              onChange={(e) =>
+                setSelectedExpense((prev) =>
+                  prev ? { ...prev, responsable: e.target.value } : prev
+                )
+              }
+            />
+       <NativeSelect
+          label="Tipo"
+          data={expenseTypeData}
+          value={selectedExpense?.type ?? ''}
+          onChange={(event) => {
+            const value = event.currentTarget.value as
+              | 'Obra de Edificação'
+              | 'Obra de Rodovias'
+              | 'Outros';
+            if (!selectedExpense) return;
+            setSelectedExpense({
+              ...selectedExpense,
+              type: value,
+            });
+          }}
+        />
+
             <NumberInput
               label="Valor"
               value={selectedExpense.amount}
@@ -240,6 +275,11 @@ const ExpenseList: React.FC = () => {
             label="Descrição"
             value={newDescription}
             onChange={(e) => setNewDescription(e.target.value)}
+          />
+           <Textarea
+            label="Responsavel"
+            value={newResponsable}
+            onChange={(e) => setNewResponsable(e.target.value)}
           />
           <NumberInput
             label="Valor"

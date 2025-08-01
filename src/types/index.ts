@@ -10,6 +10,7 @@ export interface Expense {
   status?: 'Aguardando Empenho' | 'Parcialmente Empenhada' | 'Aguardando Pagamento' | 'Parcialmente Paga' | 'Paga'
   commitments?: Commitment[]
 }
+export type ExpenseType = 'OBRA_DE_EDIFICACAO' | 'OBRA_DE_RODOVIAS' | 'OUTROS';
 
 export interface Commitment {
   id: number

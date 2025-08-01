@@ -3,13 +3,13 @@ export function translateStatus(status: string): string {
     case 'WAITING_PAYMENT':
       return 'Aguardando Pagamento'
     case 'PAID':
-      return 'Paga'
+      return 'Pago'
     case 'WAITING_COMMITMENT':
       return 'Aguardando Empenho'
     case 'PARTIALLY_COMMITED':
       return 'Parcialmente Empenhada'
     case 'PARTIALLY_PAYED':
-      return 'Parcialmente Paga'
+      return 'Parcialmente Pago'
     default:
       return status
   }
