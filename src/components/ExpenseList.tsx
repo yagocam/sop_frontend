@@ -20,7 +20,6 @@ import { Expense } from '@/types'
 import { translateStatus, translateType } from '@/utils/translate'
 
 const ExpenseList: React.FC = () => {
-  const dispatch = useDispatch<any>()
 
   const [expenses, setExpenses] = useState<Expense[]>([])
   const [selectedExpense, setSelectedExpense] = useState<Expense | null>(null)
