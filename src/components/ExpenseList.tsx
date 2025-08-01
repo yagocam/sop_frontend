@@ -13,7 +13,7 @@ import {
   Textarea,
   NumberInput,
   Group,
-  TextInput,
+  // TextInput removido aqui porque não é usado
 } from '@mantine/core'
 import api from '@/api/axios'
 import { Expense } from '@/types'
