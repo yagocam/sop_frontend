@@ -21,6 +21,13 @@ import { translateStatus, translateType } from '@/utils/translate';
 
 type ExpenseType = 'OBRA_DE_EDIFICACAO' | 'OBRA_DE_RODOVIAS' | 'OUTROS';
 
+interface Commitment {
+  id: number;
+  observation: string;
+  amount: number;
+  number: string ;
+}
+
 interface Expense {
   id: number;
   protocol_number: string;
@@ -30,6 +37,7 @@ interface Expense {
   status?: string;
   type: ExpenseType;
   expires_at?: string | null;
+  commitments?: Commitment[];
 }
 
 const expenseTypeData = [
@@ -40,10 +48,10 @@ const expenseTypeData = [
 
 const validTypes: ExpenseType[] = ['OBRA_DE_EDIFICACAO', 'OBRA_DE_RODOVIAS', 'OUTROS'];
 
-// Função para pegar data ISO do dia seguinte
 const getTomorrowISO = () => {
   const tomorrow = new Date();
   tomorrow.setDate(tomorrow.getDate() + 1);
+  tomorrow.setHours(0, 0, 0, 0);
   return tomorrow.toISOString();
 };
 
@@ -54,13 +62,17 @@ const ExpenseList: React.FC = () => {
 
   const [viewModalOpened, setViewModalOpened] = useState(false);
   const [editModalOpened, setEditModalOpened] = useState(false);
-  const [createModalOpened, setCreateModalOpened] = useState(false);
+  const [createExpenseModalOpened, setCreateExpenseModalOpened] = useState(false);
+  const [createCommitmentModalOpened, setCreateCommitmentModalOpened] = useState(false);
 
   const [newDescription, setNewDescription] = useState('');
   const [newResponsable, setNewResponsable] = useState('');
   const [newAmount, setNewAmount] = useState<number | undefined>(undefined);
   const [newType, setNewType] = useState<ExpenseType>('OBRA_DE_EDIFICACAO');
   const [newExpiresAt, setNewExpiresAt] = useState<string | null>(getTomorrowISO());
+
+  const [newCommitmentObersvation, setNewCommitmentObservation] = useState('');
+  const [newCommitmentAmount, setNewCommitmentAmount] = useState<number | undefined>(undefined);
 
   useEffect(() => {
     fetchExpenses();
@@ -122,7 +134,7 @@ const ExpenseList: React.FC = () => {
         expires_at: newExpiresAt ?? getTomorrowISO(),
       });
 
-      setCreateModalOpened(false);
+      setCreateExpenseModalOpened(false);
       setNewDescription('');
       setNewAmount(undefined);
       setNewType('OBRA_DE_EDIFICACAO');
@@ -135,11 +147,36 @@ const ExpenseList: React.FC = () => {
     }
   };
 
+  const handleCreateCommitment = async () => {
+    if (!newCommitmentObersvation.trim() || !newCommitmentAmount || !selectedExpense) {
+      alert('Preencha descrição e valor para o novo empenho');
+      return;
+    }
+
+    try {
+      await api.post(`/api/commitments/`, {
+        observation: newCommitmentObersvation,
+        amount: newCommitmentAmount,
+        expense_id: selectedExpense.id ,
+      });
+
+      setCreateCommitmentModalOpened(false);
+      setNewCommitmentObservation('');
+      setNewCommitmentAmount(undefined);
+
+      fetchExpenses();
+      setViewModalOpened(false);
+    } catch (error) {
+      console.error('Erro ao criar empenho', error);
+      alert('Erro ao criar empenho');
+    }
+  };
+
   return (
     <>
       <Stack gap="xl" p="md">
         <Title order={2}>Lista de Despesas</Title>
-        <Button onClick={() => setCreateModalOpened(true)} mb="md">
+        <Button onClick={() => setCreateExpenseModalOpened(true)} mb="md">
           Nova Despesa
         </Button>
 
@@ -182,7 +219,13 @@ const ExpenseList: React.FC = () => {
       </Stack>
 
       {/* Modal de Visualização */}
-      <Modal opened={viewModalOpened} onClose={() => setViewModalOpened(false)} title="Detalhes da Despesa" size="lg" centered>
+      <Modal
+        opened={viewModalOpened}
+        onClose={() => setViewModalOpened(false)}
+        title="Detalhes da Despesa"
+        size="lg"
+        centered
+      >
         {selectedExpense && (
           <Stack gap="sm">
             <Text><b>ID:</b> {selectedExpense.id}</Text>
@@ -192,30 +235,90 @@ const ExpenseList: React.FC = () => {
             <Text><b>Valor:</b> R$ {selectedExpense.amount.toFixed(2)}</Text>
             <Text><b>Status:</b> {translateStatus(selectedExpense.status ?? '')}</Text>
             <Text><b>Tipo:</b> {translateType(selectedExpense.type)}</Text>
-            <Text><b>Vencimento:</b> {selectedExpense.expires_at ? dayjs(selectedExpense.expires_at).format('DD/MM/YYYY HH:mm') : '-'}</Text>
+            <Text>
+              <b>Vencimento:</b>{' '}
+              {selectedExpense.expires_at ? dayjs(selectedExpense.expires_at).format('DD/MM/YYYY HH:mm') : '-'}
+            </Text>
+
+            <Stack mt="md" gap="xs">
+              <Text w={600}>Compromissos:</Text>
+              {selectedExpense.commitments && selectedExpense.commitments.length > 0 ? (
+                selectedExpense.commitments.map((commitment) => (
+                  <Stack
+                    key={commitment.id}
+                    gap={2}
+                    px="sm"
+                    py="xs"
+                    style={{
+                      border: '1px solid #eee',
+                      borderRadius: 8,
+                      backgroundColor: '#fafafa',
+                    }}
+                  >
+                    <Text size="sm"><b>Número:</b> {commitment.number}</Text>
+                    <Text size="sm"><b>Observação:</b> {commitment.observation}</Text>
+                    <Text size="sm"><b>Valor:</b> R$ {commitment.amount.toFixed(2)}</Text>
+                  </Stack>
+                ))
+              ) : (
+                <Text size="sm" color="dimmed">Nenhum compromisso encontrado.</Text>
+              )}
+            </Stack>
+
+            <Button
+              mt="md"
+              onClick={() => {
+                setViewModalOpened(false);
+                setCreateCommitmentModalOpened(true);
+              }}
+            >
+              Criar Novo Empenho
+            </Button>
           </Stack>
         )}
       </Modal>
 
       {/* Modal de Edição */}
-      <Modal opened={editModalOpened} onClose={() => setEditModalOpened(false)} title="Editar Despesa" size="md" centered>
+      <Modal
+        opened={editModalOpened}
+        onClose={() => setEditModalOpened(false)}
+        title="Editar Despesa"
+        size="md"
+        centered
+      >
         {selectedExpense && (
           <Stack gap="md">
-            <Textarea label="Descrição" value={selectedExpense.description} onChange={(e) => setSelectedExpense(prev => prev ? { ...prev, description: e.target.value } : prev)} />
-            <Textarea label="Responsável" value={selectedExpense.responsable} onChange={(e) => setSelectedExpense(prev => prev ? { ...prev, responsable: e.target.value } : prev)} />
-            <NumberInput label="Valor" value={selectedExpense.amount} min={0} onChange={(val) => setSelectedExpense(prev => prev ? { ...prev, amount: Number(val) } : prev)} />
-            <NativeSelect label="Tipo" data={expenseTypeData} value={selectedExpense.type} onChange={(e) => {
-              const value = e.currentTarget.value as ExpenseType;
-              if (validTypes.includes(value)) setSelectedExpense(prev => prev ? { ...prev, type: value } : prev);
-            }} />
+            <Textarea
+              label="Descrição"
+              value={selectedExpense.description}
+              onChange={(e) => setSelectedExpense((prev) => (prev ? { ...prev, description: e.target.value } : prev))}
+            />
+            <Textarea
+              label="Responsável"
+              value={selectedExpense.responsable}
+              onChange={(e) => setSelectedExpense((prev) => (prev ? { ...prev, responsable: e.target.value } : prev))}
+            />
+            <NumberInput
+              label="Valor"
+              value={selectedExpense.amount}
+              min={0}
+              onChange={(val) => setSelectedExpense((prev) => (prev ? { ...prev, amount: Number(val) } : prev))}
+            />
+            <NativeSelect
+              label="Tipo"
+              data={expenseTypeData}
+              value={selectedExpense.type}
+              onChange={(e) => {
+                const value = e.currentTarget.value as ExpenseType;
+                if (validTypes.includes(value)) setSelectedExpense((prev) => (prev ? { ...prev, type: value } : prev));
+              }}
+            />
             <DateInput
               label="Vencimento"
               value={selectedExpense.expires_at}
               onChange={(value) =>
-                setSelectedExpense(prev =>
-                  prev
-                    ? { ...prev, expires_at: value ?? getTomorrowISO() }
-                    : prev
+                setSelectedExpense((prev) =>
+                  prev ? { ...prev, expires_at: value ?? getTomorrowISO() } : prev
                 )
               }
             />
@@ -224,8 +327,14 @@ const ExpenseList: React.FC = () => {
         )}
       </Modal>
 
-      {/* Modal de Criação */}
-      <Modal opened={createModalOpened} onClose={() => setCreateModalOpened(false)} title="Nova Despesa" size="md" centered>
+      {/* Modal de Criação de Expense */}
+      <Modal
+        opened={createExpenseModalOpened}
+        onClose={() => setCreateExpenseModalOpened(false)}
+        title="Nova Despesa"
+        size="md"
+        centered
+      >
         <Stack gap="md">
           <Textarea label="Descrição" value={newDescription} onChange={(e) => setNewDescription(e.target.value)} />
           <Textarea label="Responsável" value={newResponsable} onChange={(e) => setNewResponsable(e.target.value)} />
@@ -237,6 +346,30 @@ const ExpenseList: React.FC = () => {
             onChange={(value) => setNewExpiresAt(value ?? getTomorrowISO())}
           />
           <Button onClick={handleCreateExpense}>Criar Despesa</Button>
+        </Stack>
+      </Modal>
+
+      {/* Modal de Criação de Commitment */}
+      <Modal
+        opened={createCommitmentModalOpened}
+        onClose={() => setCreateCommitmentModalOpened(false)}
+        title="Novo Empenho"
+        size="md"
+        centered
+      >
+        <Stack gap="md">
+          <Textarea
+            label="Observação"
+            value={newCommitmentObersvation}
+            onChange={(e) => setNewCommitmentObservation(e.target.value)}
+          />
+          <NumberInput
+            label="Valor"
+            value={newCommitmentAmount}
+            onChange={(value) => setNewCommitmentAmount(Number(value))}
+            min={0}
+          />
+          <Button onClick={handleCreateCommitment}>Criar Empenho</Button>
         </Stack>
       </Modal>
     </>
