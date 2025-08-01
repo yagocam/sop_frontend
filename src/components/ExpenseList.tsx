@@ -78,10 +78,10 @@ const expenseTypeData = [
   { value: 'OUTROS', label: 'Outros' },
 ];
   const handleCreateExpense = async () => {
-    if (!newDescription.trim() || !newAmount || !newType) {
-      alert('Por favor, preencha descrição, valor e tipo');
-      return;
-    }
+    if (  !newDescription.trim() ||   newAmount == null ||   !newType) {
+    alert('Por favor, preencha descrição, valor e tipo');
+    return;
+}
     try {
       await api.post('/api/expenses', {
         description: newDescription,
