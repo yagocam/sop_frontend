@@ -1,5 +1,5 @@
 import './globals.css';
-
+import '@mantine/core/styles.css';
 import { Providers } from '../components/providers';
 
 export const metadata = {

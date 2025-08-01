@@ -4,7 +4,7 @@ import { Expense } from '../../types'
 
 export const fetchExpenses = createAsyncThunk('expense/fetch', async () => {
   const response = await api.get<Expense[]>('/api/expenses')
-  return response.data // Corrigido para retornar só os dados
+  return response.data 
 })
 
 export const updateExpense = createAsyncThunk(
@@ -15,6 +15,17 @@ export const updateExpense = createAsyncThunk(
       return response.data
     } catch (error: any) {
       return rejectWithValue(error.response?.data || 'Erro ao atualizar despesa')
+    }
+  }
+)
+export const createExpense = createAsyncThunk(
+  'expenses/create',
+  async (data: Partial<Expense>, { rejectWithValue }) => {
+    try {
+      const response = await api.post('/api/expenses', data)
+      return response.data
+    } catch (error: any) {
+      return rejectWithValue(error.response?.data || 'Erro ao criar despesa')
     }
   }
 )
@@ -66,6 +77,18 @@ const expenseSlice = createSlice({
         state.expenses = state.expenses.filter(p => p.id !== action.payload)
       })
       .addCase(deleteExpense.rejected, (state, action) => {
+        state.error = action.payload as string
+      })
+      .addCase(createExpense.pending, state => {
+        state.loading = true
+        state.error = null
+      })
+      .addCase(createExpense.fulfilled, (state, action) => {
+        state.loading = false
+        state.expenses.push(action.payload)
+      })
+      .addCase(createExpense.rejected, (state, action) => {
+        state.loading = false
         state.error = action.payload as string
       })
   },
