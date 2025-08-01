@@ -154,7 +154,7 @@ const ExpenseList: React.FC = () => {
     }
 
     try {
-      await api.post(`/api/commitments/`, {
+      await api.post(`/api/commitments`, {
         observation: newCommitmentObersvation,
         amount: newCommitmentAmount,
         expense_id: selectedExpense.id ,
