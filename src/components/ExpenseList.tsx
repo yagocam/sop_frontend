@@ -12,11 +12,28 @@ import {
   Textarea,
   NumberInput,
   Group,
-  NativeSelect, 
+  NativeSelect,
 } from '@mantine/core';
 import api from '@/api/axios';
-import { Expense } from '@/types';
 import { translateStatus, translateType } from '@/utils/translate';
+
+type ExpenseType = 'OBRA_DE_EDIFICACAO' | 'OBRA_DE_RODOVIAS' | 'OUTROS';
+
+interface Expense {
+  id: number;
+  protocol_number: string;
+  description: string;
+  responsable: string;
+  amount: number;
+  status?: string;
+  type: ExpenseType;
+}
+
+const expenseTypeData = [
+  { value: 'OBRA_DE_EDIFICACAO', label: 'Obra de Edificação' },
+  { value: 'OBRA_DE_RODOVIAS', label: 'Obra de Rodovias' },
+  { value: 'OUTROS', label: 'Outros' },
+];
 
 const ExpenseList: React.FC = () => {
   const [expenses, setExpenses] = useState<Expense[]>([]);
@@ -30,7 +47,7 @@ const ExpenseList: React.FC = () => {
   const [newDescription, setNewDescription] = useState('');
   const [newResponsable, setNewResponsable] = useState('');
   const [newAmount, setNewAmount] = useState<number | undefined>(undefined);
-  const [newType, setNewType] = useState<string | null>(null);
+  const [newType, setNewType] = useState<ExpenseType | ''>('');
 
   useEffect(() => {
     fetchExpenses();
@@ -72,12 +89,11 @@ const ExpenseList: React.FC = () => {
     fetchExpenses();
   };
 
-const expenseTypeData = [
-  { value: 'OBRA_DE_EDIFICACAO', label: 'Obra de Edificação' },
-  { value: 'OBRA_DE_RODOVIAS', label: 'Obra de Rodovias' },
-  { value: 'OUTROS', label: 'Outros' },
-];
   const handleCreateExpense = async () => {
+    if (!newDescription.trim() || !newAmount || !newType) {
+      alert('Por favor, preencha descrição, valor e tipo');
+      return;
+    }
     try {
       await api.post('/api/expenses', {
         responsable: newResponsable,
@@ -88,7 +104,7 @@ const expenseTypeData = [
       setCreateModalOpened(false);
       setNewDescription('');
       setNewAmount(undefined);
-      setNewType(null);
+      setNewType('');
       setNewResponsable('');
       fetchExpenses();
     } catch (error) {
@@ -184,7 +200,7 @@ const expenseTypeData = [
             <Text>
               <b>Descrição:</b> {selectedExpense.description}
             </Text>
-             <Text>
+            <Text>
               <b>Responsavel:</b> {selectedExpense.responsable}
             </Text>
             <Text>
@@ -229,23 +245,19 @@ const expenseTypeData = [
                 )
               }
             />
-       <NativeSelect
-          label="Tipo"
-          data={expenseTypeData}
-          value={selectedExpense?.type ?? ''}
-          onChange={(event) => {
-            const value = event.currentTarget.value as
-              | 'Obra de Edificação'
-              | 'Obra de Rodovias'
-              | 'Outros';
-            if (!selectedExpense) return;
-            setSelectedExpense({
-              ...selectedExpense,
-              type: value,
-            });
-          }}
-        />
-
+            <NativeSelect
+              label="Tipo"
+              data={expenseTypeData}
+              value={selectedExpense?.type ?? ''}
+              onChange={(event) => {
+                const value = event.currentTarget.value as ExpenseType;
+                if (!selectedExpense) return;
+                setSelectedExpense({
+                  ...selectedExpense,
+                  type: value,
+                });
+              }}
+            />
             <NumberInput
               label="Valor"
               value={selectedExpense.amount}
@@ -260,7 +272,6 @@ const expenseTypeData = [
         )}
       </Modal>
 
-      {/* Modal de Criação */}
       <Modal
         opened={createModalOpened}
         onClose={() => setCreateModalOpened(false)}
@@ -274,7 +285,7 @@ const expenseTypeData = [
             value={newDescription}
             onChange={(e) => setNewDescription(e.target.value)}
           />
-           <Textarea
+          <Textarea
             label="Responsavel"
             value={newResponsable}
             onChange={(e) => setNewResponsable(e.target.value)}
@@ -287,13 +298,9 @@ const expenseTypeData = [
           />
           <NativeSelect
             label="Tipo"
-            data={[
-              { value: 'OBRA_DE_EDIFICACAO', label: 'Obra de Edificação' },
-              { value: 'OBRA_DE_RODOVIAS', label: 'Obra de Rodovias' },
-              { value: 'OUTROS', label: 'Outros' },
-            ]}
-            value={newType ?? ''}
-            onChange={(event) => setNewType(event.currentTarget.value)}
+            data={expenseTypeData}
+            value={newType}
+            onChange={(event) => setNewType(event.currentTarget.value as ExpenseType)}
           />
           <Button onClick={handleCreateExpense}>Criar Despesa</Button>
         </Stack>
