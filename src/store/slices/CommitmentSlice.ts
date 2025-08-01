@@ -48,12 +48,7 @@ export const fetchCommitments = createAsyncThunk(
     }
   }
 )
-interface CommitmentState {
-  commitments: Commitment[];
-  commitment: Commitment | null;
-  loading: boolean;
-  error: string | null;
-}
+
 const commitmentSlice = createSlice({
   name: 'commitments',
   initialState: {
