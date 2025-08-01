@@ -9,20 +9,22 @@
     "lint": "next lint"
   },
   "engines": {
-  "node": "20"
-},
- "dependencies": {
-  "@emotion/react": "^11.14.0",
-  "@emotion/styled": "^11.14.1",
-  "@mantine/core": "^8.2.2",
-  "@mantine/hooks": "^8.2.2",
-  "@reduxjs/toolkit": "^2.8.2",
-  "axios": "^1.11.0",
-  "next": "^13.4.10",
-  "react": "^18.2.0",
-  "react-dom": "^18.2.0",
-  "react-redux": "^9.2.0"
-},
+    "node": "20"
+  },
+  "dependencies": {
+    "@emotion/react": "^11.14.0",
+    "@emotion/styled": "^11.14.1",
+    "@mantine/core": "^8.2.2",
+    "@mantine/dates": "^8.2.2",
+    "@mantine/hooks": "^8.2.2",
+    "@reduxjs/toolkit": "^2.8.2",
+    "axios": "^1.11.0",
+    "dayjs": "^1.11.13",
+    "next": "^13.4.10",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "react-redux": "^9.2.0"
+  },
   "devDependencies": {
     "@types/node": "^20",
     "@types/react": "^19",
