@@ -2,7 +2,7 @@
 import { useState } from 'react'
 import { useSelector } from 'react-redux'
 import { loginUser } from '../store/auth/authThunks'
-import { TextInput, PasswordInput, Button, Paper, Stack, Text, Group } from '@mantine/core'
+import { TextInput, PasswordInput, Button, Paper, Stack, Text } from '@mantine/core'
 import { useAppDispatch } from '@/store/hooks'
 import { useRouter } from 'next/navigation'
 
