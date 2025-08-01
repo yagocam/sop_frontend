@@ -13,6 +13,29 @@ export const createCommitment = createAsyncThunk(
     }
   }
 )
+export const updateCommitment = createAsyncThunk(
+  'commitments/update',
+  async ({ id, data }: { id: number; data: Partial<Commitment> }, { rejectWithValue }) => {
+    try {
+      const response = await api.put(`/api/commitments/${id}`, data)
+      return response.data
+    } catch (error: any) {
+      return rejectWithValue(error.response?.data || 'Erro ao atualizar empenho')
+    }
+  }
+)
+
+export const deleteCommitment = createAsyncThunk(
+  'commitments/delete',
+  async (id: number, { rejectWithValue }) => {
+    try {
+      await api.delete(`/api/commitments/${id}`)
+      return id
+    } catch (error: any) {
+      return rejectWithValue(error.response?.data || 'Erro ao excluir empenho')
+    }
+  }
+)
 
 export const fetchCommitments = createAsyncThunk(
   'commitments/fetch',
@@ -71,6 +94,22 @@ const commitmentSlice = createSlice({
       })
       .addCase(fetchCommitments.rejected, (state, action) => {
         state.loading = false
+        state.error = action.payload as string
+      })
+      .addCase(updateCommitment.fulfilled, (state, action) => {
+        const index = state.commitments.findIndex(p => p.id === action.payload.id)
+        if (index !== -1) {
+          state.commitments[index] = action.payload
+        }
+      })
+      .addCase(updateCommitment.rejected, (state, action) => {
+        state.error = action.payload as string
+      })
+
+      .addCase(deleteCommitment.fulfilled, (state, action) => {
+        state.commitments = state.commitments.filter(p => p.id !== action.payload)
+      })
+      .addCase(deleteCommitment.rejected, (state, action) => {
         state.error = action.payload as string
       })
   }

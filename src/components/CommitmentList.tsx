@@ -12,29 +12,32 @@ import {
   Title,
   NumberInput,
   Textarea,
+  Group,
 } from '@mantine/core'
 import { RootState } from '@/store'
+import { createPayment } from '@/store/slices/paymentSlice'
 import {
-  createPayment,
-  clearPayments,
-} from '@/store/slices/paymentSlice'
-import { fetchCommitments } from '@/store/slices/CommitmentSlice'
+  fetchCommitments,
+  deleteCommitment,
+  updateCommitment,
+} from '@/store/slices/CommitmentSlice'
 import {
   clearCommitment,
   fetchCommitmentById,
 } from '@/store/slices/commitmentDetailsSlice'
+import { Commitment } from '@/types'
 
 const CommitmentList: React.FC = () => {
   const dispatch = useDispatch<any>()
 
   const [commitmentModalOpened, setCommitmentModalOpened] = useState(false)
   const [paymentModalOpened, setPaymentModalOpened] = useState(false)
+  const [editModalOpened, setEditModalOpened] = useState(false)
+
   const [newPayment, setNewPayment] = useState({ amount: 0, observation: '' })
   const [paymentError, setPaymentError] = useState<string | null>(null)
 
-  const { payments, loading: loadingPayments, error: errorPayments } = useSelector(
-    (state: RootState) => state.payment
-  )
+  const [editingCommitment, setEditingCommitment] = useState<Commitment | null>(null)
 
   const { commitments, loading: loadingCommitments } = useSelector(
     (state: RootState) => state.commitment
@@ -42,6 +45,10 @@ const CommitmentList: React.FC = () => {
 
   const commitmentDetails = useSelector(
     (state: RootState) => state.commitmentDetails.commitment
+  )
+
+  const loadingDetails = useSelector(
+    (state: RootState) => state.commitmentDetails.loading
   )
 
   useEffect(() => {
@@ -56,7 +63,6 @@ const CommitmentList: React.FC = () => {
   const handleCloseCommitmentModal = () => {
     setCommitmentModalOpened(false)
     dispatch(clearCommitment())
-    dispatch(clearPayments())
   }
 
   const handleOpenPaymentModal = () => {
@@ -94,9 +100,34 @@ const CommitmentList: React.FC = () => {
     }
   }
 
+  const handleEditCommitment = (commitment: Commitment) => {
+    setEditingCommitment(commitment)
+    setEditModalOpened(true)
+  }
+
+  const handleCloseEditModal = () => {
+    setEditModalOpened(false)
+    setEditingCommitment(null)
+  }
+
+  const handleUpdateCommitment = async () => {
+    if (!editingCommitment) return
+
+    await dispatch(updateCommitment(editingCommitment))
+    handleCloseEditModal()
+    dispatch(fetchCommitments())
+  }
+
+  const handleDeleteCommitment = async (id: number) => {
+    if (confirm('Tem certeza que deseja remover este empenho?')) {
+      await dispatch(deleteCommitment(id))
+      dispatch(fetchCommitments())
+    }
+  }
+
   return (
     <>
-      <Stack spacing="xl" p="md">
+      <Stack gap="xl" p="md">
         <Title order={2}>Lista de Empenhos</Title>
 
         {loadingCommitments ? (
@@ -121,13 +152,34 @@ const CommitmentList: React.FC = () => {
               <tbody>
                 {commitments.map((commitment) => (
                   <tr key={commitment.id}>
-                    <td>{commitment.number}</td>
-                    <td>{commitment.amount.toFixed(2)}</td>
-                    <td>{commitment.observation}</td>
+                   <td>{commitment.number}</td>
+                    <td>R$ {commitment.amount.toFixed(2)}</td>
+                    <td>{commitment.observation ?? "Sem observação"}</td>
                     <td>
-                      <Button size="xs" onClick={() => handleShowDetails(commitment.id)}>
-                        Ver Detalhes
-                      </Button>
+                      <Group gap="xs">
+                        <Button
+                          size="xs"
+                          onClick={() => handleShowDetails(commitment.id)}
+                        >
+                          Ver
+                        </Button>
+                        <Button
+                          size="xs"
+                          color="blue"
+                          variant="outline"
+                          onClick={() => handleEditCommitment(commitment)}
+                        >
+                          Editar
+                        </Button>
+                        <Button
+                          size="xs"
+                          color="red"
+                          variant="outline"
+                          onClick={() => handleDeleteCommitment(commitment.id)}
+                        >
+                          Remover
+                        </Button>
+                      </Group>
                     </td>
                   </tr>
                 ))}
@@ -137,6 +189,7 @@ const CommitmentList: React.FC = () => {
         )}
       </Stack>
 
+      {/* Modal Detalhes */}
       <Modal
         opened={commitmentModalOpened}
         onClose={handleCloseCommitmentModal}
@@ -144,22 +197,12 @@ const CommitmentList: React.FC = () => {
         size="lg"
         centered
       >
-        {loadingPayments && (
+        {loadingDetails ? (
           <Center>
             <Loader variant="dots" />
           </Center>
-        )}
-
-        {errorPayments && (
-          <Text c="red" ta="center">
-            {typeof errorPayments === 'string'
-              ? errorPayments
-              : errorPayments?.error || 'Erro ao carregar pagamentos'}
-          </Text>
-        )}
-
-        {commitmentDetails && (
-          <Stack spacing="sm">
+        ) : commitmentDetails ? (
+          <Stack gap="sm">
             <Text>
               <b>ID:</b> {commitmentDetails.id}
             </Text>
@@ -177,7 +220,7 @@ const CommitmentList: React.FC = () => {
               Adicionar Pagamento
             </Button>
 
-            {commitmentDetails.payments && commitmentDetails.payments.length > 0 && (
+            {commitmentDetails.payments?.length > 0 && (
               <>
                 <Text fw={700} mt="md">
                   Pagamentos:
@@ -207,6 +250,8 @@ const CommitmentList: React.FC = () => {
               </>
             )}
           </Stack>
+        ) : (
+          <Text ta="center">Empenho não encontrado.</Text>
         )}
       </Modal>
 
@@ -217,7 +262,7 @@ const CommitmentList: React.FC = () => {
         size="md"
         centered
       >
-        <Stack spacing="md">
+        <Stack gap="md">
           <NumberInput
             label="Valor"
             min={0}
@@ -246,6 +291,38 @@ const CommitmentList: React.FC = () => {
             Criar Pagamento
           </Button>
         </Stack>
+      </Modal>
+
+      <Modal
+        opened={editModalOpened}
+        onClose={handleCloseEditModal}
+        title="Editar Empenho"
+        size="md"
+        centered
+      >
+        {editingCommitment && (
+          <Stack gap="md">
+            <NumberInput
+              label="Valor"
+              value={editingCommitment.amount}
+              onChange={(value) =>
+                setEditingCommitment((prev) =>
+                  prev ? { ...prev, amount: Number(value) } : prev
+                )
+              }
+            />
+            <Textarea
+              label="Observação"
+              value={editingCommitment.observation}
+              onChange={(e) =>
+                setEditingCommitment((prev) =>
+                  prev ? { ...prev, observation: e.target.value } : prev
+                )
+              }
+            />
+            <Button onClick={handleUpdateCommitment}>Salvar Alterações</Button>
+          </Stack>
+        )}
       </Modal>
     </>
   )

@@ -3,9 +3,13 @@ export function translateStatus(status: string): string {
     case 'WAITING_PAYMENT':
       return 'Aguardando Pagamento'
     case 'PAID':
-      return 'Pago'
-    case 'CANCELED':
-      return 'Cancelado'
+      return 'Paga'
+    case 'WAITING_COMMITMENT':
+      return 'Aguardando Empenho'
+    case 'PARTIALLY_COMMITED':
+      return 'Parcialmente Empenhada'
+    case 'PARTIALLY_PAYED':
+      return 'Parcialmente Paga'
     default:
       return status
   }
@@ -15,9 +19,9 @@ export function translateType(type: string): string {
   switch (type) {
     case 'OBRA_DE_EDIFICACAO':
       return 'Obra de Edificação'
-    case 'SERVICO_PRESTADO':
-      return 'Serviço Prestado'
+    case 'OBRA_DE_RODOVIAS':
+      return 'Obra de Rodovias'
     default:
-      return type
+      return 'outros'
   }
 }
