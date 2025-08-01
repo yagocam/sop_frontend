@@ -35,6 +35,9 @@ const expenseTypeData = [
   { value: 'OUTROS', label: 'Outros' },
 ];
 
+// Lista para validação dos tipos
+const validTypes: ExpenseType[] = ['OBRA_DE_EDIFICACAO', 'OBRA_DE_RODOVIAS', 'OUTROS'];
+
 const ExpenseList: React.FC = () => {
   const [expenses, setExpenses] = useState<Expense[]>([]);
   const [selectedExpense, setSelectedExpense] = useState<Expense | null>(null);
@@ -84,6 +87,12 @@ const ExpenseList: React.FC = () => {
 
   const handleSaveEdit = async () => {
     if (!selectedExpense) return;
+
+    if (!validTypes.includes(selectedExpense.type)) {
+      alert('Tipo inválido selecionado para edição.');
+      return;
+    }
+
     await api.put(`/api/expenses/${selectedExpense.id}`, selectedExpense);
     setEditModalOpened(false);
     fetchExpenses();
@@ -94,6 +103,11 @@ const ExpenseList: React.FC = () => {
       alert('Por favor, preencha descrição, valor e tipo');
       return;
     }
+    if (!validTypes.includes(newType)) {
+      alert('Tipo inválido selecionado para criação.');
+      return;
+    }
+
     try {
       await api.post('/api/expenses', {
         responsable: newResponsable,
@@ -148,7 +162,7 @@ const ExpenseList: React.FC = () => {
                     <td className="text-center">{expense.protocol_number}</td>
                     <td className="text-center">{expense.description}</td>
                     <td className="text-center">R$ {expense.amount.toFixed(2)}</td>
-                    <td className="text-center">{translateType(expense.type ?? '')}</td>
+                    <td className="text-center">{translateType(expense.type)}</td>
                     <td>
                       <Group gap="xs">
                         <Button size="xs" onClick={() => handleView(expense)}>
@@ -210,7 +224,7 @@ const ExpenseList: React.FC = () => {
               <b>Status:</b> {translateStatus(selectedExpense.status ?? '')}
             </Text>
             <Text>
-              <b>Tipo:</b> {translateType(selectedExpense.type ?? '')}
+              <b>Tipo:</b> {translateType(selectedExpense.type)}
             </Text>
           </Stack>
         )}
@@ -248,14 +262,13 @@ const ExpenseList: React.FC = () => {
             <NativeSelect
               label="Tipo"
               data={expenseTypeData}
-              value={selectedExpense?.type ?? ''}
+              value={selectedExpense.type}
               onChange={(event) => {
                 const value = event.currentTarget.value as ExpenseType;
                 if (!selectedExpense) return;
-                setSelectedExpense({
-                  ...selectedExpense,
-                  type: value,
-                });
+                if (validTypes.includes(value)) {
+                  setSelectedExpense({ ...selectedExpense, type: value });
+                }
               }}
             />
             <NumberInput
@@ -266,12 +279,14 @@ const ExpenseList: React.FC = () => {
                   prev ? { ...prev, amount: Number(value) ?? 0 } : prev
                 )
               }
+              min={0}
             />
             <Button onClick={handleSaveEdit}>Salvar Alterações</Button>
           </Stack>
         )}
       </Modal>
 
+      {/* Modal de Criação */}
       <Modal
         opened={createModalOpened}
         onClose={() => setCreateModalOpened(false)}
@@ -300,7 +315,14 @@ const ExpenseList: React.FC = () => {
             label="Tipo"
             data={expenseTypeData}
             value={newType}
-            onChange={(event) => setNewType(event.currentTarget.value as ExpenseType)}
+            onChange={(event) => {
+              const value = event.currentTarget.value as ExpenseType;
+              if (validTypes.includes(value)) {
+                setNewType(value);
+              } else {
+                setNewType('');
+              }
+            }}
           />
           <Button onClick={handleCreateExpense}>Criar Despesa</Button>
         </Stack>
