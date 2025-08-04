@@ -3,7 +3,7 @@ import '@mantine/core/styles.css';
 import { Providers } from '../components/providers';
 
 export const metadata = {
-  title: 'Seu projeto',
+  title: 'SOP Front',
   description: 'Descrição',
 };
 
