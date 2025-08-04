@@ -9,7 +9,7 @@ import { store } from '../store';
 export function Providers({ children }: { children: ReactNode }) {
   return (
     <ReduxProvider store={store}>
-      <MantineProvider
+      <MantineProvider defaultColorScheme='light'
         theme={{
           fontFamily: 'Open Sans, sans-serif',
           primaryColor: 'blue',
