@@ -24,7 +24,27 @@ export const updateCommitment = createAsyncThunk(
     }
   }
 )
+export const handleDownloadPdf = async () => {
+    try {
+      const response = await api.get('/api/reports/commitments/pdf', {
+        responseType: 'blob',
+      });
 
+      const blob = new Blob([response.data], { type: 'application/pdf' });
+      const url = window.URL.createObjectURL(blob);
+
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', 'relatorio_empenhos.pdf');
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error('Erro ao baixar PDF:', error);
+      alert('Erro ao gerar relatório PDF.');
+    }
+  };
 export const deleteCommitment = createAsyncThunk(
   'commitments/delete',
   async (id: number, { rejectWithValue }) => {

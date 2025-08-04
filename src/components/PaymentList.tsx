@@ -5,6 +5,7 @@ import {
   selectPayments,
   updatePayment,
   deletePayment,
+  handleDownloadPdf
 } from '@/store/slices/paymentSlice'
 import { AppDispatch } from '@/store'
 import {
@@ -14,6 +15,7 @@ import {
   Button,
   Modal,
   Stack,
+  Title,
   TextInput,
   NumberInput,
 } from '@mantine/core'
@@ -84,7 +86,18 @@ export default function PaymentList() {
 
   return (
     <>
+          <Stack gap="xl" p="md">
+           <Title order={2}>Lista de Pagamentos</Title>
+           
+           <Group justify="space-between" mb="md">
+             <Button variant="light" color="grape" onClick={handleDownloadPdf}>
+               Baixar Relatório
+             </Button>
+           </Group>
+          
+          </Stack>
       <div>
+         
         {payments.map((payment) => (
           <Card key={payment.id} shadow="sm" padding="md" mb="md" withBorder>
             <Group justify="space-between" mb="xs">

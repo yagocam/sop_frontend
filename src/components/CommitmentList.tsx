@@ -20,6 +20,7 @@ import {
   fetchCommitments,
   deleteCommitment,
   updateCommitment,
+  handleDownloadPdf
 } from '@/store/slices/CommitmentSlice'
 import {
   clearCommitment,
@@ -137,7 +138,12 @@ const CommitmentList: React.FC = () => {
     <>
       <Stack gap="xl" p="md">
         <Title order={2}>Lista de Empenhos</Title>
-
+        
+        <Group justify="space-between" mb="md">
+          <Button variant="light" color="grape" onClick={handleDownloadPdf}>
+            Baixar Relatório
+          </Button>
+        </Group>
         {loadingCommitments ? (
           <Center>
             <Loader variant="dots" />
@@ -197,7 +203,6 @@ const CommitmentList: React.FC = () => {
         )}
       </Stack>
 
-      {/* Modal Detalhes */}
       <Modal
         opened={commitmentModalOpened}
         onClose={handleCloseCommitmentModal}

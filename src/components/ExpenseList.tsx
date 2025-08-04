@@ -90,6 +90,28 @@ const ExpenseList: React.FC = () => {
     }
   };
 
+  const handleDownloadPdf = async () => {
+    try {
+      const response = await api.get('/api/reports/expenses/pdf', {
+        responseType: 'blob',
+      });
+
+      const blob = new Blob([response.data], { type: 'application/pdf' });
+      const url = window.URL.createObjectURL(blob);
+
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', 'relatorio_despesas.pdf');
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error('Erro ao baixar PDF:', error);
+      alert('Erro ao gerar relatório PDF.');
+    }
+  };
+
   const handleView = (expense: Expense) => {
     setSelectedExpense(expense);
     setViewModalOpened(true);
@@ -157,7 +179,7 @@ const ExpenseList: React.FC = () => {
       await api.post(`/api/commitments`, {
         observation: newCommitmentObersvation,
         amount: newCommitmentAmount,
-        expense_id: selectedExpense.id ,
+        expense_id: selectedExpense.id,
       });
 
       setCreateCommitmentModalOpened(false);
@@ -176,9 +198,15 @@ const ExpenseList: React.FC = () => {
     <>
       <Stack gap="xl" p="md">
         <Title order={2}>Lista de Despesas</Title>
-        <Button onClick={() => setCreateExpenseModalOpened(true)} mb="md">
-          Nova Despesa
-        </Button>
+
+        <Group justify="space-between" mb="md">
+          <Button onClick={() => setCreateExpenseModalOpened(true)}>
+            Nova Despesa
+          </Button>
+          <Button variant="light" color="grape" onClick={handleDownloadPdf}>
+            Baixar Relatório
+          </Button>
+        </Group>
 
         {loading ? (
           <Center><Loader variant="dots" /></Center>
@@ -218,7 +246,6 @@ const ExpenseList: React.FC = () => {
         )}
       </Stack>
 
-      {/* Modal de Visualização */}
       <Modal
         opened={viewModalOpened}
         onClose={() => setViewModalOpened(false)}
@@ -278,7 +305,6 @@ const ExpenseList: React.FC = () => {
         )}
       </Modal>
 
-      {/* Modal de Edição */}
       <Modal
         opened={editModalOpened}
         onClose={() => setEditModalOpened(false)}
@@ -327,7 +353,6 @@ const ExpenseList: React.FC = () => {
         )}
       </Modal>
 
-      {/* Modal de Criação de Expense */}
       <Modal
         opened={createExpenseModalOpened}
         onClose={() => setCreateExpenseModalOpened(false)}
@@ -349,7 +374,6 @@ const ExpenseList: React.FC = () => {
         </Stack>
       </Modal>
 
-      {/* Modal de Criação de Commitment */}
       <Modal
         opened={createCommitmentModalOpened}
         onClose={() => setCreateCommitmentModalOpened(false)}

@@ -13,12 +13,33 @@ export const createPayment = createAsyncThunk(
     }
   }
 )
+export  const handleDownloadPdf = async () => {
+    try {
+      const response = await api.get('/api/reports/payments/pdf', {
+        responseType: 'blob',
+      });
+
+      const blob = new Blob([response.data], { type: 'application/pdf' });
+      const url = window.URL.createObjectURL(blob);
+
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', 'relatorio_pagamentos.pdf');
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error('Erro ao baixar PDF:', error);
+      alert('Erro ao gerar relatório PDF.');
+    }
+  };
 
 export const fetchPayments = createAsyncThunk(
   'payments/fetchPayments',
   async (_, { rejectWithValue }) => {
     try {
-      const response = await api.get(`/api/payments`)
+      const response = await api.get<Payment[]>(`/api/payments`)
       return response.data
     } catch (error: any) {
       return rejectWithValue(error.response?.data || 'Erro ao buscar pagamentos')
